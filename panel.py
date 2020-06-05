@@ -100,18 +100,20 @@ class ANIM_UL_List(bpy.types.UIList):
             split.label(text=item.name)  
             
         split = split.split(factor=1)
-        split.prop(item.animation_data.action, "name", text="")
+        if item.animation_data.action:
+            split.prop(item.animation_data.action, "name", text="")
+        # if item.animation_data.nla_tracks:
+        #     split.prop(item.animation_data.nla_tracks[0], "name", text="")
+
 
     def filter_items(self, context, data, propname):
-        objects = getattr(data, propname)
-        objectList = objects.items()
+        objects_in_scene = data.objects
 
         # Default return values.
         flt_flags = []
         flt_neworder = []
 
-        flt_flags = [self.bitflag_filter_item if hasattr(
-            obj[1].animation_data, "action") and obj[1].animation_data is not "None"  and obj[1].visible_get() else 0 for obj in objectList]
+        flt_flags = [self.bitflag_filter_item if obj.animation_data and obj.animation_data.action and obj.visible_get() else 0 for obj in objects_in_scene]
 
         return flt_flags, flt_neworder
 
