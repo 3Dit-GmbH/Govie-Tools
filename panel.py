@@ -14,11 +14,16 @@ def remapVisProp(self,value):
 
 class Export_Settings(bpy.types.PropertyGroup):  
     open_export_settings_menu: BoolProperty(default = False)    
+    open_scene_settings_menu: BoolProperty(default = False)    
+    open_animation_settings_menu: BoolProperty(default = False)    
+    open_compression_settings_menu: BoolProperty(default = False)    
     glb_filename: StringProperty(name="Filename",default="filename")   
     export_selected: BoolProperty(default = False)
     export_lights: BoolProperty(default = False)
     export_animations: BoolProperty(default = True)
     apply_modifiers: BoolProperty(default = False)
+    use_sampling:BoolProperty(default = False)
+    group_by_nla:BoolProperty(default = True)
     export_image_format: bpy.props.EnumProperty(
         name="Image Compression",
         items=(
@@ -252,28 +257,72 @@ class GLBExportPanel(bpy.types.Panel):
         layout.prop(scene.export_settings,"open_export_settings_menu",text="Export Settings", icon = 'TRIA_DOWN' if scene.export_settings.open_export_settings_menu else 'TRIA_RIGHT' )
         if scene.export_settings.open_export_settings_menu:
             box = layout.box()
-            box.label(text="SCENE")
-            box.prop(scene.export_settings,"export_selected",text="Selected Only", toggle = True, icon="RESTRICT_SELECT_OFF")
-            box.prop(scene.export_settings,"export_lights",text="Include Lights", toggle = True, icon="LIGHT")
-            box.prop(scene.export_settings,"export_animations",text="Include Animation", toggle = True, icon="RENDER_ANIMATION")
-            box.prop(scene.export_settings,"apply_modifiers",text="Apply Modifiers", toggle = True, icon="MODIFIER")
+            # Scene Settings
+            if scene.export_settings.open_scene_settings_menu:
+                box.alert = True
+            box.prop(scene.export_settings,"open_scene_settings_menu",text="Scene", icon = 'TRIA_DOWN' if scene.export_settings.open_scene_settings_menu else 'TRIA_RIGHT')
+            if scene.export_settings.open_scene_settings_menu:
+                box.alert = False  
 
+                col = box.column(align = True)
+                row = col.row(align = True)           
+                row.separator(factor=4)
+                row.prop(scene.export_settings,"export_selected",text="Selected Only", toggle = True, icon="RESTRICT_SELECT_OFF")
+                row.prop(scene.export_settings,"export_lights",text="Include Lights", toggle = True, icon="LIGHT")
+                row.separator(factor=4)
+     
+                row = col.row(align = True)           
+                row.separator(factor=4)
+                row.prop(scene.export_settings,"export_animations",text="Include Animation", toggle = True, icon="RENDER_ANIMATION")
+                row.prop(scene.export_settings,"apply_modifiers",text="Apply Modifiers", toggle = True, icon="MODIFIER")
+                row.separator(factor=4)
+    
 
-            box.label(text="COMPRESSION")
-            box.prop(scene.export_settings,"export_image_format",text="Image Format")
-            box.prop(scene.export_settings,"use_draco",text="Use Draco", toggle = True)
-            row = box.row()
-            if scene.export_settings.use_draco:
-                row.prop(scene.export_settings,"draco_compression_level",text="Compression Level")
-                row.prop(scene.export_settings,"postion_quantization",text="Position Quantisation")
+            # Animation Settings
+            if scene.export_settings.open_animation_settings_menu:
+                box.alert = True
+            box.prop(scene.export_settings,"open_animation_settings_menu",text="Animation", icon = 'TRIA_DOWN' if scene.export_settings.open_animation_settings_menu else 'TRIA_RIGHT' )
+            if scene.export_settings.open_animation_settings_menu:
+                box.alert = False
+                col = box.column(align = True)
+                row = col.row(align = True)   
+                row.separator(factor=4)   
+                row.prop(scene.export_settings,"use_sampling",text="Use Sampling", toggle = True, icon="MODIFIER")
+                row.prop(scene.export_settings,"group_by_nla",text="Group by NLA", toggle = True, icon="MODIFIER")
+                row.separator(factor=4)
 
-                row = box.row()
-                row.prop(scene.export_settings,"normal_quantization",text="Normal Quantisation")
-                row.prop(scene.export_settings,"texcoord_quantization",text="Texture Coord. Quantisation")
+             # Compression Settings
+            if scene.export_settings.open_compression_settings_menu:
+                box.alert = True
+            box.prop(scene.export_settings,"open_compression_settings_menu",text="Compression", icon = 'TRIA_DOWN' if scene.export_settings.open_compression_settings_menu else 'TRIA_RIGHT' )
+            if scene.export_settings.open_compression_settings_menu:
+                box.alert = False
 
-            # box.prop(scene.export_settings,"use_draco",text="Use Draco", toggle = True)
+                col = box.column()
+                
+                row = col.row(align = True)   
+                row.separator(factor=4)  
+                row.prop(scene.export_settings,"use_draco",text="Use Draco", toggle = True)
+                row.separator(factor=4)  
+                if scene.export_settings.use_draco:
+                    # Draco Settings
+                    row = col.row(align = True)   
+                    row.separator(factor=4)  
+                    row.prop(scene.export_settings,"export_image_format",text="Format")
+                    row.separator(factor=4)  
 
+                    col = box.column(align = True)
+                    row = col.row(align = True)   
+                    row.separator(factor=4)
+                    row.prop(scene.export_settings,"draco_compression_level",text="Compression Level")
+                    row.prop(scene.export_settings,"postion_quantization",text="Position Quantisation")
+                    row.separator(factor=4)
 
+                    row = col.row(align = True)   
+                    row.separator(factor=4)
+                    row.prop(scene.export_settings,"normal_quantization",text="Normal Quantisation")
+                    row.prop(scene.export_settings,"texcoord_quantization",text="Texture Coord. Quantisation")
+                    row.separator(factor=4)
 
         layout.prop(scene.export_settings,"glb_filename")
         # layout.operator("export_scene.gltf", text="Dialog Export")
